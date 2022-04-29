@@ -85,6 +85,19 @@ app.use("/api/users", userRoute);
 app.use("/api/auth", authRoute);
 app.use("/api/posts", postRoute);
 
+// sereve frontend
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname, "../frontend/build")));
+
+  app.get("*", (req, res) =>
+    res.sendFile(__dirname, "../frontend", "build", "index.html")
+  );
+}else{
+  app.get('/',(req,res)=>{
+    res.status(200).json('welcome to my API')
+  })
+}
+
 server.listen(PORT, () => {
   console.log(`Server is running on ${PORT}`);
 });
