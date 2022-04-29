@@ -65,7 +65,6 @@ const likePost = asyncHandler(async (req, res) => {
   const { id } = req.params;
   try {
     const post = await Post.findById(id);
-    console.log(post);
     if (!post.likes.includes(userId)) {
       await post.updateOne({ $push: { likes: userId } });
       res.status(200).json("post has been liked");
@@ -96,14 +95,26 @@ const getAllPosts = asyncHandler(async (req, res) => {
   const { userId } = req.body;
 
   try {
-    const currentUser = await User.findById(userId);
+    const currentUser = await User.findById(req.params.userId);
     const userPosts = await Post.find({ userId: currentUser._id });
     const friendsPosts = await Promise.all(
       currentUser.followings.map((friendId) => {
         return Post.find({ userId: friendId });
       })
     );
-    res.json(userPosts.concat(...friendsPosts));
+    res.status(200).json(userPosts.concat(...friendsPosts));
+  } catch (error) {
+    res.status(500);
+    throw new Error(error);
+  }
+});
+
+// @desc timeline posts
+const getUserAllPosts = asyncHandler(async (req, res) => {
+  try {
+    const user = await User.findOne({ username: req.params.username });
+    const posts = await Post.find({ userId: user._id });
+    res.status(200).json(posts);
   } catch (error) {
     res.status(500);
     throw new Error(error);
@@ -117,4 +128,5 @@ module.exports = {
   deletePost,
   likePost,
   getAllPosts,
+  getUserAllPosts,
 };
